@@ -132,5 +132,5 @@ Tracked event categories (via `trackEvent()`):
 
 ## Related Docs
 - [Domain Glossary](./domain-glossary.md) — project terminology
-- [Product Context](../../memory-bank/productContext.md) — feature details and UX principles
-- [Decision Log](../../memory-bank/decisionLog.md) — architectural decisions
+- [Product Context](../memory/productContext.md) — feature details and UX principles
+- [Decision Log](../memory/decisionLog.md) — architectural decisions

@@ -152,5 +152,5 @@ yarn build:excalidraw
 
 ## Related Docs
 - [Architecture](./architecture.md) — system design and patterns
-- [System Patterns](../../memory-bank/systemPatterns.md) — state management, rendering, collaboration
-- [Tech Context](../../memory-bank/techContext.md) — full dependency list and versions
+- [System Patterns](../memory/systemPatterns.md) — state management, rendering, collaboration
+- [Tech Context](../memory/techContext.md) — full dependency list and versions

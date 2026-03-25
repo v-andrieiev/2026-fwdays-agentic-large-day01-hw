@@ -134,5 +134,5 @@
 
 ## Related Docs
 - [PRD](./PRD.md) — product requirements
-- [Product Context](../../memory-bank/productContext.md) — features and UX principles
-- [System Patterns](../../memory-bank/systemPatterns.md) — architecture details
+- [Product Context](../memory/productContext.md) — features and UX principles
+- [System Patterns](../memory/systemPatterns.md) — architecture details

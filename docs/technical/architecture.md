@@ -112,6 +112,6 @@ packages/utils/              → Helper functions
 
 ## Related Docs
 - [Dev Setup](./dev-setup.md) — onboarding guide
-- [System Patterns](../../memory-bank/systemPatterns.md) — state management, rendering pipeline, collaboration flow
-- [Tech Context](../../memory-bank/techContext.md) — dependencies and versions
-- [Decision Log](../../memory-bank/decisionLog.md) — architectural decisions with rationale
+- [System Patterns](../memory/systemPatterns.md) — state management, rendering pipeline, collaboration flow
+- [Tech Context](../memory/techContext.md) — dependencies and versions
+- [Decision Log](../memory/decisionLog.md) — architectural decisions with rationale
