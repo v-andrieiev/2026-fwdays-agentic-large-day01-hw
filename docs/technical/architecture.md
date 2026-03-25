@@ -74,6 +74,176 @@ graph LR
     RESTORE --> PERSIST
 ```
 
+## Data Flow
+
+### User Interaction Flow
+
+```mermaid
+flowchart TD
+    A[User Input<br/>mouse/keyboard/touch] --> B[App.tsx<br/>Event Handlers]
+    B --> C{Action Type}
+    C -->|Drawing| D[Element Creation<br/>packages/element/]
+    C -->|UI| E[AppState Update]
+    C -->|Tool switch| F[ActiveTool Change]
+
+    D --> G[Scene Update]
+    E --> G
+    F --> G
+
+    G --> H[AppStateObserver.flush]
+    H --> I[Re-render Canvas]
+    H --> J[Notify Subscribers]
+
+    I --> K[Static Scene<br/>Background elements]
+    I --> L[Interactive Scene<br/>Selection, handles]
+
+    J --> M[Collaboration Sync]
+    J --> N[Auto-save to IndexedDB]
+```
+
+### Collaboration Data Flow
+
+```mermaid
+flowchart LR
+    subgraph "Client A"
+        A1[User Action] --> A2[Local State Update]
+        A2 --> A3[Broadcast via Portal]
+    end
+
+    subgraph "WebSocket Server"
+        WS[Message Router<br/>socket.io]
+    end
+
+    subgraph "Client B"
+        B1[Receive Update] --> B2["reconcileElements()<br/>version + nonce merge"]
+        B2 --> B3[Local State Update]
+        B3 --> B4[Re-render Canvas]
+    end
+
+    A3 -->|SCENE_UPDATE| WS
+    WS -->|Broadcast| B1
+
+    subgraph "Persistence"
+        FB[Firebase<br/>Firestore + Storage]
+        IDB[IndexedDB<br/>Local cache]
+    end
+
+    A2 -->|Throttled save| FB
+    A2 -->|Immediate| IDB
+    B3 -->|Immediate| IDB
+```
+
+### Export Data Flow
+
+```mermaid
+flowchart LR
+    A[Scene Elements + AppState] --> B{Export Format}
+    B -->|PNG| C[Canvas → Blob<br/>+ embedded JSON metadata]
+    B -->|SVG| D[staticSvgScene.ts<br/>→ SVG string]
+    B -->|JSON| E[Serialize to<br/>.excalidraw file]
+    B -->|Clipboard| F[Copy as PNG/SVG/text]
+
+    C --> G[Download / Share]
+    D --> G
+    E --> G
+    F --> H[System Clipboard]
+```
+
+### State Management Flow
+
+```mermaid
+flowchart TD
+    subgraph "Jotai Atoms (Reactive)"
+        JA[collabAPIAtom]
+        JB[isCollaboratingAtom]
+        JC[isOfflineAtom]
+        JD[UIAppState atoms]
+    end
+
+    subgraph "AppState (Imperative)"
+        AS[AppState object<br/>~100+ properties]
+        OBS[AppStateObserver<br/>subscription-based]
+    end
+
+    subgraph "React Contexts"
+        CTX1[ExcalidrawAPIContext<br/>imperative API for host apps]
+        CTX2[UIAppStateContext<br/>UI state for components]
+        CTX3[TunnelsContext<br/>portal-based UI composition]
+    end
+
+    JA --> |useAtomValue| COMP[React Components]
+    AS --> OBS --> |notify| COMP
+    CTX1 --> |useContext| COMP
+    CTX2 --> |useContext| COMP
+    CTX3 --> |render into slots| COMP
+```
+
+## Package Dependencies
+
+### Dependency Graph
+
+```mermaid
+graph TD
+    APP["excalidraw-app<br/>(web application)"]
+    EXC["@excalidraw/excalidraw<br/>(core library)"]
+    ELEM["@excalidraw/element<br/>(element operations)"]
+    MATH["@excalidraw/math<br/>(geometry & math)"]
+    COMMON["@excalidraw/common<br/>(shared types & constants)"]
+    UTILS["@excalidraw/utils<br/>(helper functions)"]
+
+    APP --> EXC
+    EXC --> ELEM
+    EXC --> MATH
+    EXC --> COMMON
+    EXC --> UTILS
+    ELEM --> MATH
+    ELEM --> COMMON
+    MATH --> COMMON
+```
+
+### Package Details
+
+| Package | Purpose | Key Exports | Build |
+|---------|---------|-------------|-------|
+| `@excalidraw/common` | Foundation layer | Constants (`FONT_FAMILY`, `TOOL_TYPE`, `EVENT`), shared types, utility functions | esbuild → ESM |
+| `@excalidraw/math` | Geometry engine | Point/vector operations, curve math, polygon intersection, angle calculations | esbuild → ESM |
+| `@excalidraw/element` | Element operations | Element types (`ExcalidrawElement` union), creation, mutation, binding, collision detection | esbuild → ESM |
+| `@excalidraw/excalidraw` | Core UI library | React component, actions, renderer, state management, data layer | esbuild → ESM |
+| `@excalidraw/utils` | Standalone helpers | Scene export utilities, element helpers (no React dependency) | esbuild → ESM |
+
+### Build Order (Critical)
+
+Packages must be built in dependency order:
+```
+1. @excalidraw/common    (no internal deps)
+2. @excalidraw/math      (depends on common)
+3. @excalidraw/element   (depends on common, math)
+4. @excalidraw/excalidraw (depends on all above)
+5. @excalidraw/utils     (depends on common)
+```
+
+Command: `yarn build:packages` handles this automatically.
+
+### External Dependency Map
+
+| Category | Package | Used By | Purpose |
+|----------|---------|---------|---------|
+| **Rendering** | `roughjs` | excalidraw | Hand-drawn shape rendering |
+| **Rendering** | `perfect-freehand` | excalidraw | Smooth freehand strokes |
+| **State** | `jotai` + `jotai-scope` | excalidraw | Atomic state, per-instance isolation |
+| **Collaboration** | `socket.io-client` | excalidraw-app | WebSocket real-time sync |
+| **Persistence** | `firebase` | excalidraw-app | Auth, Firestore, Cloud Storage |
+| **Persistence** | `idb-keyval` | excalidraw | IndexedDB wrapper for local save |
+| **Data** | `pako` | excalidraw | Compression for scene data |
+| **Data** | `nanoid` | excalidraw | Unique element ID generation |
+| **Data** | `fractional-indexing` | excalidraw | Stable element ordering for multiplayer |
+| **Data** | `png-chunk-text` | excalidraw | Embed scene JSON in PNG exports |
+| **UI** | `clsx` | excalidraw | Conditional CSS class names |
+| **UI** | `fuzzy` | excalidraw | Fuzzy search for command palette |
+| **i18n** | `i18next` | excalidraw | 60+ language translations |
+| **Code** | `@codemirror/*` | excalidraw | In-app code editing |
+| **Monitoring** | `@sentry/browser` | excalidraw-app | Error tracking (production) |
+
 ## Key Design Principles
 
 1. **Canvas-first**: All drawing happens on HTML Canvas (not DOM) for performance
