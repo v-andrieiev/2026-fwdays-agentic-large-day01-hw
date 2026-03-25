@@ -4,7 +4,8 @@
 This repository is being used as a learning project for the "Crash Course: Agentic IDE" course (fwdays, 2026). The focus is on understanding AI-assisted development workflows using a real-world open-source codebase (Excalidraw).
 
 ## Recent Changes (Git Log)
-```
+
+```text
 4451b1e - updates (koldovsky)
 da795d2 - check-instructions (koldovsky)
 5247322 - initial (koldovsky)
@@ -47,7 +48,7 @@ a345399 - Initial (koldovsky)
 | **Collaboration** | `excalidraw-app/collab/Collab.tsx` | WebSocket sync, presence, conflict resolution |
 | **State Management** | `packages/excalidraw/editor-jotai.ts` | Jotai store setup, isolated atoms |
 | **Element Rendering** | `packages/excalidraw/renderer/` | Canvas rendering pipeline (static + interactive) |
-| **Element Types** | `packages/excalidraw/element/types.ts` | All element type definitions |
+| **Element Types** | `packages/element/src/types.ts` | All element type definitions |
 | **Actions System** | `packages/excalidraw/actions/` | User actions (tools, transforms, clipboard) |
 | **Data Layer** | `packages/excalidraw/data/` | Persistence, export, import, reconciliation |
 | **Hooks** | `packages/excalidraw/hooks/` | Custom React hooks |

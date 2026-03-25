@@ -133,6 +133,37 @@ interface ButtonProps extends React.DetailedHTMLProps<...> {
 }
 ```
 
+## Action Pattern
+
+### Action System (`packages/excalidraw/actions/`)
+
+The action system is the primary way user interactions are handled. Each action is a self-contained unit with:
+
+- **`name`**: Unique `ActionName` identifier (100+ actions: copy, paste, undo, selectAll, export, etc.)
+- **`perform()`**: Function that receives current state and returns `ActionResult` (partial updates to elements/appState/files)
+- **`label`** / **`icon`**: UI representation for toolbars and menus
+- **`keyTest()`**: Optional keyboard shortcut matcher
+- **`predicate()`**: Optional condition for when the action is available
+
+### Action Sources
+
+Actions can be triggered from multiple sources (`ActionSource`):
+
+| Source | Example |
+|--------|---------|
+| `"ui"` | Clicking a toolbar button |
+| `"keyboard"` | Pressing Ctrl+Z |
+| `"contextMenu"` | Right-click menu |
+| `"api"` | ExcalidrawImperativeAPI call |
+| `"commandPalette"` | Fuzzy search selection |
+
+### Registration & Execution
+
+1. Actions are registered in `packages/excalidraw/actions/` (one file per action group)
+2. `App.tsx` holds the action manager that dispatches actions
+3. Each action's `perform()` returns an `ActionResult` which is merged into current state
+4. UI components use action metadata (label, icon, keyTest) to render buttons and shortcuts
+
 ## Data Flow
 
 ### Unidirectional

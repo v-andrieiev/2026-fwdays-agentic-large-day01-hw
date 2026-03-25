@@ -70,7 +70,7 @@
 - **Date**: Initial setup commits
 
 ### 14. Memory Bank Documentation
-- **Decision**: Generate a comprehensive Memory Bank (`memory-bank/` directory) with 7 standardized files
+- **Decision**: Generate a comprehensive Memory Bank (`docs/memory/` directory) with 7 standardized files
 - **Rationale**: Course requirement — document project context for AI-assisted development workflows (Cursor/Windsurf style)
 - **Date**: 2026-03-25
 

@@ -1,6 +1,6 @@
 # Architecture
 
-> High-level architecture of the Excalidraw codebase. For detailed patterns see [systemPatterns.md](../../memory-bank/systemPatterns.md).
+> High-level architecture of the Excalidraw codebase. For detailed patterns see [systemPatterns.md](../memory/systemPatterns.md).
 
 ## System Diagram
 
@@ -214,7 +214,8 @@ graph TD
 ### Build Order (Critical)
 
 Packages must be built in dependency order:
-```
+
+```text
 1. @excalidraw/common    (no internal deps)
 2. @excalidraw/math      (depends on common)
 3. @excalidraw/element   (depends on common, math)
@@ -244,6 +245,44 @@ Command: `yarn build:packages` handles this automatically.
 | **Code** | `@codemirror/*` | excalidraw | In-app code editing |
 | **Monitoring** | `@sentry/browser` | excalidraw-app | Error tracking (production) |
 
+## Rendering Pipeline
+
+### Canvas Layers
+
+Excalidraw uses a multi-layer canvas approach for performance. Each layer serves a distinct purpose:
+
+```mermaid
+flowchart TD
+    A[React State Change] --> B[Render Scheduler]
+    B --> C["getNormalizedCanvasDimensions()<br/>DPI & viewport scaling"]
+    C --> D{Layer Selection}
+
+    D --> E["Static Canvas<br/>(staticScene.ts)<br/>Background element rendering"]
+    D --> F["Interactive Canvas<br/>(interactiveScene.ts, ~57KB)<br/>Selection handles, transforms, snaps"]
+    D --> G["New Element Canvas<br/>(renderNewElementScene.ts)<br/>Element being drawn"]
+    D --> H["SVG Export<br/>(staticSvgScene.ts)<br/>Vector export rendering"]
+
+    E --> I[Composite Canvas Output]
+    F --> I
+    G --> I
+```
+
+### Render Cycle
+
+1. **State mutation** triggers render via `AppStateObserver`
+2. **DPI normalization** adapts to device pixel ratio
+3. **Static layer** renders all committed elements (cached when possible)
+4. **Interactive layer** renders selection UI, transform handles, snap guides
+5. **New element layer** renders the element currently being drawn
+6. **Composite** layers are stacked in the browser
+
+### Key Optimizations
+
+- Layers are rendered independently — only dirty layers re-render
+- Static scene is cached and reused when only interactive state changes
+- `requestAnimationFrame` throttling prevents excessive renders
+- Chunk-based rendering splits work across frames for large scenes
+
 ## Key Design Principles
 
 1. **Canvas-first**: All drawing happens on HTML Canvas (not DOM) for performance
@@ -254,7 +293,7 @@ Command: `yarn build:packages` handles this automatically.
 
 ## Directory Map
 
-```
+```text
 excalidraw-app/              → Web application shell
 ├── collab/                  → Real-time collaboration (Collab.tsx, Portal)
 ├── components/              → App-specific UI
@@ -281,6 +320,7 @@ packages/utils/              → Helper functions
 ```
 
 ## Related Docs
+
 - [Dev Setup](./dev-setup.md) — onboarding guide
 - [System Patterns](../memory/systemPatterns.md) — state management, rendering pipeline, collaboration flow
 - [Tech Context](../memory/techContext.md) — dependencies and versions

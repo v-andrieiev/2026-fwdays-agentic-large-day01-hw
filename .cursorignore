@@ -6,6 +6,13 @@ build/
 dist/
 dev-dist/
 coverage/
+.next/
+.nyc_output/
+
+# Minified & generated
+*.min.js
+*.min.css
+*.snap
 
 # Logs & caches
 *.log
@@ -24,9 +31,10 @@ firebase-debug.log
 yarn.lock
 package-lock.json
 
-# IDE
+# IDE & VCS
 .vscode/
 .idea/
+.git/
 
 # OS
 .DS_Store
